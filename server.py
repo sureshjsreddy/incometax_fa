@@ -1,15 +1,9 @@
-# server.py
 from fastmcp import FastMCP
 
-# Create the server
 server = FastMCP("FA Tax Schedule MCP Server")
 
 @server.tool()
 def parse_pdf(file_path: str):
-    """
-    Extract share transactions from a PDF file.
-    Replace with pdfplumber or PyPDF2 logic.
-    """
     transactions = [
         {"date": "2025-01-01", "shares": 100, "fmv": 50.0, "country": "US"},
         {"date": "2025-02-15", "shares": 200, "fmv": 55.0, "country": "US"},
@@ -18,9 +12,6 @@ def parse_pdf(file_path: str):
 
 @server.tool()
 def generate_tax_schedule(transactions: list):
-    """
-    Generate a foreign asset schedule for income tax filing.
-    """
     schedule = {
         "opening_balance": 0,
         "additions": sum(t["shares"] for t in transactions),
@@ -30,4 +21,5 @@ def generate_tax_schedule(transactions: list):
     return {"foreign_asset_schedule": schedule}
 
 if __name__ == "__main__":
-    server.run()
+    # Explicitly run with HTTP transport for cloud hosting
+    server.run(transport="http", host="0.0.0.0", port=8000)
