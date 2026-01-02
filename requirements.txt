@@ -1,0 +1,3 @@
+fastmcp
+pdfplumber
+PyPDF2
