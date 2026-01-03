@@ -1,3 +1,4 @@
+import io
 import pdfplumber
 from fastmcp import FastMCP
 
