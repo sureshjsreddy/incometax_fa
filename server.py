@@ -13,12 +13,13 @@ def get_fa_transactions() -> dict:
         "Read the attached PDF. "
         "Locate the 'Activity' table. "
         "Extract only rows where Activity = 'You bought'. "
-        "For each row, return a JSON object with:\n"
+        "For each row, return a csv row  with:\n"
         "- entry_date (normalize to YYYY-MM-DD)\n"
         "- book_value (numeric, USD)\n"
         "- units (numeric)\n"
         "- unit_price (numeric, USD)\n\n"
-        "Output as a JSON array called 'transactions'."
+        "Output as a csv file called 'transactions'."
+        "for same date if there is Employer and Employee transactions then sum up book_value,units, and average the unit_price in to single row"
     )
 
     return {"next_prompt": prompt}
