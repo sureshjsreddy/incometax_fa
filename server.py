@@ -1,5 +1,4 @@
-import io
-import pdfplumber
+import io, pdfplumber
 from fastmcp import FastMCP
 
 server = FastMCP("FA Tax Schedule MCP Server")
@@ -7,8 +6,7 @@ server = FastMCP("FA Tax Schedule MCP Server")
 @server.tool()
 def parse_pdf(file_bytes: bytes) -> dict:
     """
-    Extract 'You bought' transactions from the Activity table in the PDF.
-    Accepts raw PDF bytes instead of a file path.
+    Accept raw PDF bytes and parse 'You bought' transactions.
     """
     transactions = []
     try:
@@ -31,7 +29,6 @@ def parse_pdf(file_bytes: bytes) -> dict:
         return {"error": str(e)}
 
     return {"transactions": transactions}
-
 
 @server.tool()
 def generate_tax_schedule(transactions: list) -> dict:
