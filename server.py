@@ -1,16 +1,27 @@
-import io
-import base64
-import pdfplumber
+import io, base64, pdfplumber
 from fastmcp import FastMCP
+from datetime import datetime
 
 server = FastMCP("FA Tax Schedule MCP Server")
+
+def normalize_date(date_str: str) -> str:
+    """
+    Convert dates like '05-Jan-2023' or '15-Sep-2023' into ISO format '2023-01-05'.
+    """
+    try:
+        return datetime.strptime(date_str.strip(), "%d-%b-%Y").strftime("%Y-%m-%d")
+    except Exception:
+        try:
+            return datetime.strptime(date_str.strip(), "%d-%b-%y").strftime("%Y-%m-%d")
+        except Exception:
+            return date_str  # fallback if parsing fails
 
 @server.tool()
 def parse_pdf(file_bytes: bytes = None, file_base64: str = None) -> dict:
     """
     Extract 'You bought' transactions from the Activity table in the PDF.
     Accepts either raw PDF bytes or a base64-encoded string.
-    Returns a list of transactions with entry_date, book_value, units, and unit_price.
+    Returns a list of transactions with entry_date (ISO), book_value, units, and unit_price.
     """
     transactions = []
 
@@ -21,9 +32,8 @@ def parse_pdf(file_bytes: bytes = None, file_base64: str = None) -> dict:
         elif file_base64:
             pdf_stream = io.BytesIO(base64.b64decode(file_base64))
         else:
-            return {"error": "No PDF data provided. Please upload file bytes or base64 string."}
+            return {"error": "No PDF data provided."}
 
-        # Parse PDF
         with pdfplumber.open(pdf_stream) as pdf:
             for page in pdf.pages:
                 tables = page.extract_tables()
@@ -33,14 +43,16 @@ def parse_pdf(file_bytes: bytes = None, file_base64: str = None) -> dict:
                             continue
                         entry_date, activity, _, _, units, unit_price, book_value = row[:7]
 
-                        # Only consider "You bought" rows
-                        if activity and "You bought" in activity:
+                        # Normalize activity text
+                        activity_text = (activity or "").lower()
+
+                        if "you bought" in activity_text:
                             try:
                                 transactions.append({
-                                    "entry_date": entry_date,
-                                    "book_value": float(book_value.replace("$", "").replace(",", "")) if book_value else None,
-                                    "units": float(units) if units else None,
-                                    "unit_price": float(unit_price.replace("$", "").replace(",", "")) if unit_price else None,
+                                    "entry_date": normalize_date(entry_date),
+                                    "book_value": float(str(book_value).replace("$", "").replace(",", "")) if book_value else None,
+                                    "units": float(str(units).replace(",", "")) if units else None,
+                                    "unit_price": float(str(unit_price).replace("$", "").replace(",", "")) if unit_price else None,
                                     "currency": "USD"
                                 })
                             except Exception:
