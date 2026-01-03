@@ -50,7 +50,9 @@ def parse_pdf(file_bytes: bytes = None, file_base64: str = None) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
-    return {"transactions": transactions}
+   # Return only first 10 transactions for now
+    return {"transactions": transactions[:10]}
+
 
 @server.tool()
 def generate_tax_schedule(transactions: list) -> dict:
