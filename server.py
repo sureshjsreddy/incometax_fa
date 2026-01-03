@@ -51,7 +51,7 @@ def parse_pdf(file_bytes: bytes = None, file_base64: str = None) -> dict:
         return {"error": str(e)}
 
    # Return only first 10 transactions for now
-    return {"transactions": transactions[:10]}
+    return {"transactions": transactions[:1]}
 
 
 @server.tool()
