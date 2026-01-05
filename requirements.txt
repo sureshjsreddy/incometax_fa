@@ -1,3 +1,4 @@
 fastmcp<3
 pdfplumber
 PyPDF2
+httpx 
