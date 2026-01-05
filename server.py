@@ -58,7 +58,7 @@ def get_fa_transactions() -> dict:
         "- 'ZIP Code' (static): 11111\n"
         "- 'Date of acquiring the interest' (YYYY-MM-DD) = Entry Date in PDF\n"
         "- 'Initial value of the investment' (numeric, INR) = Book Value (USD) converted via tool 'usd_to_inr_on_date' for the respective date\n"
-        "- 'units' (numeric)\n"
+        "- 'units' (numeric) =  Number of Unit in pdf \n"
         "- 'unit_price' (numeric, INR) = Unit Label Price (USD) converted to INR\n"
         "For the same date, if there are Employer and Employee transactions, "
         "sum book_value and units, and average unit_price into a single row.\n"
