@@ -1,8 +1,10 @@
 
 import re
 import httpx
-from mcp.server.fastmcp import FastMCP  # official MCP SDK
+import os
 from datetime import datetime
+from mcp.server.fastmcp import FastMCP
+from mcp.server.http import create_streamable_http_app
 
 server = FastMCP("FA Tax Schedule Server", json_response=True)
 
@@ -91,5 +93,17 @@ def generate_tax_schedule(transactions: list) -> dict:
     }
     return {"foreign_asset_schedule": schedule}
   
+# Create ASGI app for Streamable HTTP transport at /mcp
+app = create_streamable_http_app(
+    server=server,
+    streamable_http_path="/mcp",
+    stateless_http=False,   # set True if you want stateless sessions
+    debug=False
+)
+
 if __name__ == "__main__":
-    server.run(transport="streamable-http")
+    # Bind to the hosting port and 0.0.0.0
+    port = int(os.getenv("PORT", "8000"))
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+
