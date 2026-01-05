@@ -53,7 +53,7 @@ def get_fa_transactions() -> dict:
     prompt = (
         "find and read the sharetransactions.pdf file .\n"
         "Locate the 'Activity' table.\n"
-        "Extract only rows where Activity = 'You bought'.\n"
+        "Extract only rows where Activity = 'You bought' or 'Opening Value' or 'Opening balance'.\n"
         "Create  a CSV file named 'transactions' with columns:\n"
         "- 'Country Name and Code' (static): 2-UNITED STATES OF AMERICA\n"
         "- 'Name of entity' (static): CGI Inc\n"
