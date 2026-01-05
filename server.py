@@ -93,4 +93,6 @@ def generate_tax_schedule(transactions: list) -> dict:
 
 if __name__ == "__main__":
     # Use the official transport name; host/port are supported by FastMCP HTTP
-    server.run(transport="streamable-http", host="0.0.0.0", port=8000)
+   
+if __name__ == "__main__":
+    server.run(transport="streamable-http")
