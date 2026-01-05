@@ -65,16 +65,10 @@ def get_fa_transactions() -> dict:
         "- 'Peak value of the investment' (numeric, INR) = Max unit price form final list of all unit_price of latest year and multiply with units for the respective date"
         "- 'units' (numeric) =  Number of Unit in pdf - its a number so don't convert \n"
         "- 'unit_price' (numeric, INR) = Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
-        "- 'close units' (numeric) =  . claculate and update value as mentioned below instructions after sorting the rows \n"
         "For the same date, if there are Employer and Employee transactions, "
         "sum the  book_value, units, Peak value of the investment and average the unit_price into a single row.\n"
         "finally sort rows by [Date of acquiring the interest]\n"
         "example: 'Peak value of the investment' column value is MAX price from list of all unit_price of latest year(ignore previous year dates) multply with no of units of current row date\n"
-        "Extract only rows where Activity ='Sale'. from this rows data update 'close units' column.\n"
-        "'close units' - Apply FIFO (First‑In‑First‑Out) logic to update the close_units in acquisition data.\n"
-        "Rules:- Process sale events in ascending sale_date order.\n"
-        "- For each sale: Reduce sale_units starting from the oldest acquisition row (earliest date). Decrease close_units accordingly. If a row’s close_units becomes 0, move to the next row.\n"
-        "Continue until the sale_units for that sale_date becomes 0. \n"
     )
     return {"next_prompt": prompt}
 
@@ -108,4 +102,3 @@ if __name__ == "__main__":
     server.run(transport="http", host="0.0.0.0", port=8000)
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
-
