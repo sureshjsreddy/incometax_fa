@@ -48,13 +48,13 @@ async def usd_to_inr_on_date(date: str, amount: float = 1.0) -> dict:
 @server.tool()
 def get_fa_transactions() -> dict:
     """
-    Return a prompt that instructs the AI agent to read the PDF and extract 'You bought' rows.
+    Return a prompt that instructs the AI agent to read the PDF and extract 'You bought' or 'Opening Value' or 'Opening balance' rows '.
     """
     prompt = (
         "find and read the sharetransactions.pdf file .\n"
         "Locate the 'Activity' table.\n"
         "Extract only rows where Activity = 'You bought'.\n"
-        "Return a CSV named 'transactions' with columns:\n"
+        "Create  a CSV file named 'transactions' with columns:\n"
         "- 'Country Name and Code' (static): 2-UNITED STATES OF AMERICA\n"
         "- 'Name of entity' (static): CGI Inc\n"
         "- 'Address of entity' (static): 1350 RENELEVES QUE BOULEVAR D WEST- 5TH FLOOR- MONTREAL\n"
@@ -66,7 +66,7 @@ def get_fa_transactions() -> dict:
         "- 'units' (numeric) =  Number of Unit in pdf - its a number so don't convert \n"
         "- 'unit_price' (numeric, INR) = Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
         "For the same date, if there are Employer and Employee transactions, "
-        "sum book_value and units, and average unit_price into a single row.\n"
+        "sum the  book_value, units, Peak value of the investment and average the unit_price into a single row.\n"
     )
     return {"next_prompt": prompt}
 
