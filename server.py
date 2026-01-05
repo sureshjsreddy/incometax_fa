@@ -90,9 +90,6 @@ def generate_tax_schedule(transactions: list) -> dict:
         "currency": "INR",
     }
     return {"foreign_asset_schedule": schedule}
-
-if __name__ == "__main__":
-    # Use the official transport name; host/port are supported by FastMCP HTTP
-   
+  
 if __name__ == "__main__":
     server.run(transport="streamable-http")
