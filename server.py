@@ -50,7 +50,7 @@ def get_fa_transactions() -> dict:
     Return a prompt that instructs the AI agent to read the PDF and extract 'You bought' rows.
     """
     prompt = (
-        "Read the attached share-transactions PDF.\n"
+        "find and read the sharetransactions.pdf file .\n"
         "Locate the 'Activity' table.\n"
         "Extract only rows where Activity = 'You bought'.\n"
         "Return a CSV named 'transactions' with columns:\n"
