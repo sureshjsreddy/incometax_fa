@@ -1,8 +1,49 @@
 import io, base64, pdfplumber
+import re
+import httpx
+
 from fastmcp import FastMCP
 from datetime import datetime
 
 server = FastMCP("FA Tax Schedule Server")
+
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+@server.tool()
+async def usd_to_inr_on_date(date: str, amount: float = 1.0) -> dict:
+    """
+    Get the USD→INR exchange rate for a given YYYY-MM-DD date.
+    Optionally convert an amount (default 1.0 USD).
+    Returns: {date, base, target, rate, amount_in_target}
+    """
+    if not DATE_RE.match(date):
+        raise ValueError("date must be YYYY-MM-DD")
+    if amount <= 0:
+        raise ValueError("amount must be > 0")
+
+    # Frankfurter historical endpoint: /v1/{date}?base=USD&symbols=INR
+    url = f"https://api.frankfurter.dev/v1/{date}"
+    params = {"base": "USD", "symbols": "INR"}
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(url, params=params)
+        resp.raise_for_status()
+        data = resp.json()
+
+    rate = data["rates"].get("INR")
+    if rate is None:
+        raise RuntimeError("INR rate not available for the requested date")
+
+    # date returned is the effective FX date per Frankfurter (UTC)
+    effective_date = data.get("date", date)
+
+    return {
+        "date": effective_date,
+        "base": "USD",
+        "target": "INR",
+        "rate": rate,
+        "amount_in_target": round(amount * rate, 6)
+    }
 
 @server.tool()
 def get_fa_transactions() -> dict:
