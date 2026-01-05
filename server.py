@@ -62,11 +62,12 @@ def get_fa_transactions() -> dict:
         "- 'Nature of entity' (static): Private Limited\n"
         "- 'Date of acquiring the interest' (YYYY-MM-DD) = Entry Date in PDF\n"
         "- 'Initial value of the investment' (numeric, INR) = Book Value (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
-        "- 'Peak value of the investment' (numeric, INR) = Check which date single unit price is high and calculate the price for the respective date with high price"
+        "- 'Peak value of the investment' (numeric, INR) = Max unit price (only from latest year) multiply with units for the respective date"
         "- 'units' (numeric) =  Number of Unit in pdf - its a number so don't convert \n"
         "- 'unit_price' (numeric, INR) = Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
         "For the same date, if there are Employer and Employee transactions, "
         "sum the  book_value, units, Peak value of the investment and average the unit_price into a single row.\n"
+        "finally sort rows by [Date of acquiring the interest]"
     )
     return {"next_prompt": prompt}
 
