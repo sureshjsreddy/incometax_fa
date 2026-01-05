@@ -1,11 +1,10 @@
-import io, base64, pdfplumber
+
 import re
 import httpx
-
-from fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP  # official MCP SDK
 from datetime import datetime
 
-server = FastMCP("FA Tax Schedule Server")
+server = FastMCP("FA Tax Schedule Server", json_response=True)
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -17,9 +16,9 @@ async def usd_to_inr_on_date(date: str, amount: float = 1.0) -> dict:
     Returns: {date, base, target, rate, amount_in_target}
     """
     if not DATE_RE.match(date):
-        raise ValueError("date must be YYYY-MM-DD")
+        raise ValueError("`date` must be YYYY-MM-DD")
     if amount <= 0:
-        raise ValueError("amount must be > 0")
+        raise ValueError("`amount` must be > 0")
 
     # Frankfurter historical endpoint: /v1/{date}?base=USD&symbols=INR
     url = f"https://api.frankfurter.dev/v1/{date}"
@@ -30,11 +29,11 @@ async def usd_to_inr_on_date(date: str, amount: float = 1.0) -> dict:
         resp.raise_for_status()
         data = resp.json()
 
-    rate = data["rates"].get("INR")
+    rate = data.get("rates", {}).get("INR")
     if rate is None:
         raise RuntimeError("INR rate not available for the requested date")
 
-    # date returned is the effective FX date per Frankfurter (UTC)
+    # Frankfurter returns the effective FX date (UTC)
     effective_date = data.get("date", date)
 
     return {
@@ -42,7 +41,7 @@ async def usd_to_inr_on_date(date: str, amount: float = 1.0) -> dict:
         "base": "USD",
         "target": "INR",
         "rate": rate,
-        "amount_in_target": round(amount * rate, 6)
+        "amount_in_target": round(amount * rate, 6),
     }
 
 @server.tool()
@@ -51,35 +50,47 @@ def get_fa_transactions() -> dict:
     Return a prompt that instructs the AI agent to read the PDF and extract 'You bought' rows.
     """
     prompt = (
-        "Read the attached shartransactions PDF. "
-        "Locate the 'Activity' table. "
-        "Extract only rows where Activity = 'You bought'. "
-        "For each row, return a csv row  with:\n"
-        "Country Name and Code","ZIP Code"
-        "- column:'Country Name and Code' static value: 2.United State of America"
-        "- column:'ZIP Code' static value: 11111"
-        "- column:'Date of acquiring the interest' (normalize to YYYY-MM-DD) - Entry Date coumn in pdf\n"
-        "- column:'Initial value of the investment' (numeric, INR) - Book Value in pdf is in USD convert to INR using tool:'usd_to_inr_on_date' for the respective date \n"
-        "- column: 'units' (numeric)\n"
-        "- column: 'unit_price' (numeric, INR ) Unit Label Price in pdf is in USD convert to INR \n"
-        "Output as a csv file called 'transactions'."
-        "for same date if there is Employer and Employee transactions then sum up book_value,units, and average the unit_price in to single row"
+        "Read the attached share-transactions PDF.\n"
+        "Locate the 'Activity' table.\n"
+        "Extract only rows where Activity = 'You bought'.\n"
+        "Return a CSV named 'transactions' with columns:\n"
+        "- 'Country Name and Code' (static): 2.United State of America\n"
+        "- 'ZIP Code' (static): 11111\n"
+        "- 'Date of acquiring the interest' (YYYY-MM-DD) = Entry Date in PDF\n"
+        "- 'Initial value of the investment' (numeric, INR) = Book Value (USD) converted via tool 'usd_to_inr_on_date' for the respective date\n"
+        "- 'units' (numeric)\n"
+        "- 'unit_price' (numeric, INR) = Unit Label Price (USD) converted to INR\n"
+        "For the same date, if there are Employer and Employee transactions, "
+        "sum book_value and units, and average unit_price into a single row.\n"
     )
-
     return {"next_prompt": prompt}
 
 @server.tool()
 def generate_tax_schedule(transactions: list) -> dict:
     """
-    Generate a foreign asset schedule for income tax filing.
+    Generate a foreign asset schedule summary from transaction rows.
+    Expects each item to have keys: date, units, unit_price, initial_value_in_inr (optional).
     """
+    def _num(x):
+        try:
+            return float(x)
+        except (TypeError, ValueError):
+            return 0.0
+
+    total_units = sum(_num(t.get("units")) for t in transactions)
+    # If you computed INR per row, prefer that; otherwise use units * unit_price
+    total_inr = sum(_num(t.get("initial_value_in_inr", _num(t.get("units")) * _num(t.get("unit_price"))))
+                    for t in transactions)
+
     schedule = {
-        "opening_balance": 0,
-        "additions": sum(t["units"] for t in transactions if t["units"]),
-        "closing_balance": sum(t["units"] for t in transactions if t["units"]),
-        "currency": "USD",
+        "opening_balance_units": 0.0,         # fill if you have prior period
+        "additions_units": total_units,
+        "closing_balance_units": total_units, # simplistic; adjust for disposals
+        "total_value_in_inr": round(total_inr, 2),
+        "currency": "INR",
     }
     return {"foreign_asset_schedule": schedule}
 
 if __name__ == "__main__":
-    server.run(transport="http", host="0.0.0.0", port=8000)
+    # Use the official transport name; host/port are supported by FastMCP HTTP
+    server.run(transport="streamable-http", host="0.0.0.0", port=8000)
