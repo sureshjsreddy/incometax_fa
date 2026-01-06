@@ -72,7 +72,7 @@ def get_fa_transactions() -> dict:
         "example: 'Peak value of the investment' column value is MAX price from list of all __unit_price of latest year(ignore previous year dates) multply with no of units of current row date\n"
         "##instructions for 'Closing balance'## -  "Locate the 'Activity' table. find the row where Activity = 'Closing balance'.\n"  
         "and from above row get the  Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date as closingINRPrice\n"
-        "now multiply the closingINRPrice with value from '__units' column of respective row and update the value in 'Closing balance' column\n'
+        "now multiply the closingINRPrice with value from '__units' column of respective row and update the value in 'Closing balance' column\n"
         
     )
     return {"next_prompt": prompt}
