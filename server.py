@@ -62,13 +62,18 @@ def get_fa_transactions() -> dict:
         "- 'Nature of entity' (static): Private Limited\n"
         "- 'Date of acquiring the interest' (YYYY-MM-DD) = Entry Date in PDF\n"
         "- 'Initial value of the investment' (numeric, INR) = Book Value (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
-        "- 'Peak value of the investment' (numeric, INR) = Max unit price form final list of all unit_price of latest year and multiply with units for the respective date"
-        "- 'units' (numeric) =  Number of Unit in pdf - its a number so don't convert \n"
-        "- 'unit_price' (numeric, INR) = Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
+        "- 'Peak value of the investment' (numeric, INR) = Max unit price form final list of all __unit_price of latest year and multiply with units for the respective date"
+        "- 'Closing balance' (numeric, INR) = see instructions for 'Closing balance'"
+        "- '__units' (numeric) =  Number of Unit in pdf - its a number so don't convert \n"
+        "- '__unit_price' (numeric, INR) = Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date\n"
         "For the same date, if there are Employer and Employee transactions, "
-        "sum the  book_value, units, Peak value of the investment and average the unit_price into a single row.\n"
+        "sum the  book_value, __units, Peak value of the investment and average the __unit_price into a single row.\n"
         "finally sort rows by [Date of acquiring the interest]\n"
-        "example: 'Peak value of the investment' column value is MAX price from list of all unit_price of latest year(ignore previous year dates) multply with no of units of current row date\n"
+        "example: 'Peak value of the investment' column value is MAX price from list of all __unit_price of latest year(ignore previous year dates) multply with no of units of current row date\n"
+        "##instructions for 'Closing balance'## -  "Locate the 'Activity' table. find the row where Activity = 'Closing balance'.\n"  
+        "and from above row get the  Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date as closingINRPrice\n"
+        "now multiply the closingINRPrice with value from '__units' column of respective row and update the value in 'Closing balance' column\n'
+        
     )
     return {"next_prompt": prompt}
 
