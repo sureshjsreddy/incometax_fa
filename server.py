@@ -102,7 +102,17 @@ def generate_tax_schedule(transactions: list) -> dict:
         "currency": "INR",
     }
     return {"foreign_asset_schedule": schedule}
-  
+
+@server.tool()
+def cleanup() -> dict:
+    """
+    Return a prompt that instructs the AI agent to do final clean up'.
+    """
+    prompt = (
+        "find the created csv file transactions.csv and remove all columns start with __ and save the csv file"
+    )
+    return {"next_prompt": prompt}
+    
 if __name__ == "__main__":
     server.run(transport="http", host="0.0.0.0", port=8000)
     
