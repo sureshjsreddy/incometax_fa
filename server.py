@@ -70,38 +70,12 @@ def get_fa_transactions() -> dict:
         "sum the  book_value, __units, Peak value of the investment and average the __unit_price into a single row.\n"
         "finally sort rows by [Date of acquiring the interest]\n"
         "example: 'Peak value of the investment' column value is MAX price from list of all __unit_price of latest year(ignore previous year dates) multply with no of units of current row date\n"
-        "##instructions for 'Closing balance'## -  "Locate the 'Activity' table. find the row where Activity = 'Closing balance'.\n"  
+        "##instructions for 'Closing balance'## -  Locate the 'Activity' table. find the row where Activity = 'Closing balance'.\n"  
         "and from above row get the  Unit Label Price (USD) convert to INR via tool 'usd_to_inr_on_date' for the respective date as closingINRPrice\n"
         "now multiply the closingINRPrice with value from '__units' column of respective row and update the value in 'Closing balance' column\n"
         
     )
     return {"next_prompt": prompt}
-
-@server.tool()
-def generate_tax_schedule(transactions: list) -> dict:
-    """
-    Generate a foreign asset schedule summary from transaction rows.
-    Expects each item to have keys: date, units, unit_price, initial_value_in_inr (optional).
-    """
-    def _num(x):
-        try:
-            return float(x)
-        except (TypeError, ValueError):
-            return 0.0
-
-    total_units = sum(_num(t.get("units")) for t in transactions)
-    # If you computed INR per row, prefer that; otherwise use units * unit_price
-    total_inr = sum(_num(t.get("initial_value_in_inr", _num(t.get("units")) * _num(t.get("unit_price"))))
-                    for t in transactions)
-
-    schedule = {
-        "opening_balance_units": 0.0,         # fill if you have prior period
-        "additions_units": total_units,
-        "closing_balance_units": total_units, # simplistic; adjust for disposals
-        "total_value_in_inr": round(total_inr, 2),
-        "currency": "INR",
-    }
-    return {"foreign_asset_schedule": schedule}
 
 @server.tool()
 def cleanup() -> dict:
